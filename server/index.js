@@ -8,6 +8,7 @@ const {Feature} = require('../db/index.js');
 const {Style} = require('../db/index.js');
 const {Sku} = require('../db/index.js');
 const {RelatedProducts} = require('../db/index.js');
+const {Cart} = require('../db/index.js');
 
 var app = express();
 
@@ -33,34 +34,24 @@ app.get('/products/:id', (req, res) => {
   var  productAddition = async() => {
     await Product.find({id: productId})
     .then(product => {
-      if(!product[0].features.length) {
         var findProduct = async() => {
           await Feature.find({product_id: productId})
           .then(feature => {
             var addFeature = async() => {
               await Product.updateOne({id: productId}, {features: feature});
-              await Product.find({id: productId})
-              .then(product => {
-                res.status(200).send(product);
-              })
-              .catch(err => {
-                res.status(500).send(err);
-              })
             }
             addFeature();
-
           })
           .catch(err => {
-            res.status(500).send(err);
+            console.log(err);
           })
         }
         findProduct();
-      } else {
-        res.status(200).send(product[0]);
-      }
+      res.status(200).send(product[0]);
     })
     .catch(err => {
-      res.send(500).send(err);
+      // res.send(500).send(err);
+      console.log(err);
     })
   }
 
@@ -72,22 +63,11 @@ app.get('/products/:id/styles', (req, res) => {
   var product_Id = req.query.product_id;
 
   var stylesAddition = async() => {
-    await Style.find({productId: product_Id})
-    .then(styles => {
-      // for (var i = 0; i < styles.length; i++) {
-      //   if (!style[i].skus.length){
-      //     var addSkus = async(style) => {
-      //       await Sku.find({styleId: style.id})
-      //       .then(newSkus => {
-      //         Style.updateOne({id: style.id}, {skus: newSkus});
-      //       })
-      //       addSkus();
-      //     }
-      //   }
-      // }
-
-      res.status(200).send(styles);
+    await Product.find({id: product_Id})
+    .then(product => {
+      res.status(200).send(product[0].styles);
     })
+
   }
 
   stylesAddition();
@@ -95,18 +75,43 @@ app.get('/products/:id/styles', (req, res) => {
 
 app.get('/products/:id/related', (req, res) => {
   var product_Id = req.query.product_id;
-  var related = async() => {
-    await RelatedProducts.find({current_product_id: product_Id})
-    .then(products => {
-      var array = [];
-      products.forEach(product => {
-        array.push(product.related_product_id);
+  var relatedArray = [];
+  var relatedProducts = async() => {
+    await Product.find({id: product_Id})
+    .then(product => {
+      product[0].related.forEach(related => {
+        relatedArray.push(related.related_product_id);
       })
-      res.status(200).send(array);
     })
+
+    res.status(200).send(relatedArray);
   }
+  relatedProducts();
 })
 
+app.get('/cart', (req, res) => {
+  var viewCart = async() => {
+    await Cart.find()
+    .then(cart => {
+      res.status(200).send(cart);
+    })
+  }
+  viewCart();
+})
+
+app.post('/cart', (req, res) => {
+  var addCart = async() => {
+    var newList = new Cart({
+      sku_id: req.body.sku_id,
+      count: req.body.count
+    })
+    // const counter = await Cart.estimatedDocumentCount();
+    // newList._id = counter + 1;
+    await newList.save();
+    res.status(201).send('Created');
+  }
+  addCart();
+})
 
 app.listen(process.env.PORT, () => {
   console.log('listening on port ', process.env.PORT);

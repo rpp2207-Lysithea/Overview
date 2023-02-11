@@ -27,15 +27,20 @@ var productSchema = mongoose.Schema({
           url: String
         }
       ],
-      skus: {
-        id : {
+      skus: [
+        {
+          id: Number,
           quantity: Number,
           size: String
         }
-      }
+      ]
     }
   ],
-  related: [Number]
+  related: [{
+    id: Number,
+    current_product_id: Number,
+    related_product_id: Number
+  }]
 });
 
 var featureSchema = mongoose.Schema({
@@ -52,7 +57,19 @@ var styleSchema = mongoose.Schema({
   sale_price: Number,
   original_price: Number,
   default_style: Boolean,
-  skus:[]
+  skus:[
+    {
+      id: Number,
+      quantity: Number,
+      size: String
+    }
+  ],
+  photos: [
+    {
+      thumbnail_url: String,
+      url: String
+    }
+  ]
 })
 
 var skuSchema = mongoose.Schema({
@@ -75,6 +92,10 @@ var photoSchema = mongoose.Schema({
   thumbnail_url: String
 })
 
+var cartSchema = mongoose.Schema({
+  sku_id: Number,
+  count: Number
+})
 let Product = mongoose.model('Product', productSchema);
 
 let Feature = mongoose.model('Feature', featureSchema);
@@ -87,11 +108,24 @@ let RelatedProducts = mongoose.model('RelatedProduct', relatedProductSchema);
 
 let Photo = mongoose.model('Photo', photoSchema);
 
+let Cart = mongoose.model('Cart', cartSchema);
+
+let saveCart = async(cart) => {
+  var newCart = new Cart({
+    sku_id: cart.sku_id,
+    count: cart.sku_id
+  });
+
+  await newCart.save()
+}
+
 module.exports.Product = Product;
 module.exports.Feature = Feature;
 module.exports.Style = Style;
 module.exports.Sku = Sku;
 module.exports.RelatedProducts = RelatedProducts;
 module.exports.Photo = Photo;
+module.exports.Cart = Cart;
+module.exports.saveCart = saveCart;
 
 
