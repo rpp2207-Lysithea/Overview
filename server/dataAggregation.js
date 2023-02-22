@@ -76,7 +76,6 @@ const getProducts = async() => {
 
     console.log(relatedAdded);
     await Product.updateOne({id: i}, {related: relatedAdded});
-
     // console.log(product);
   }
 }

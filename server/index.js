@@ -10,7 +10,6 @@ const {Sku} = require('../db/index.js');
 const {RelatedProducts} = require('../db/index.js');
 const {Cart} = require('../db/index.js');
 
-
 var app = express();
 
 app.use(express.json());
